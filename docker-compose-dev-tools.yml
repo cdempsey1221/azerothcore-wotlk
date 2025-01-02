@@ -2,6 +2,7 @@ version: '3.8'  # Match the version used in your main docker-compose.yml
 
 services:
   ac-worldserver:
+    privileged: true
     volumes:
       # Mount modules from host
       - /mnt/sdb2/wow_config/modules:/azerothcore/modules

@@ -4,7 +4,7 @@ services:
   ac-worldserver:
     volumes:
       # Mount modules from host
-      - /opt/deployment/azerothcore-wotlk/modules:/azerothcore/modules
+      - /mnt/sdb2/wow_config/modules:/azerothcore/modules
 
   phpmyadmin:
     image: phpmyadmin

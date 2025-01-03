@@ -8,6 +8,8 @@ services:
     volumes:
       # Mount modules from host
       - /mnt/sdb2/wow_config/modules:/azerothcore/modules:rw
+      - /mnt/sdb2/wow_config/conf/worldserver.conf:/azerothcore/env/dist/etc/worldserver.conf
+      - /mnt/sdb2/wow_config/conf/playerbots.conf:/azerothcore/env/dist/etc/modules/playerbots.conf
 
   phpmyadmin:
     image: phpmyadmin

@@ -11,6 +11,7 @@ services:
       - /mnt/sdb2/wow_config/conf/worldserver.conf:/azerothcore/env/dist/etc/worldserver.conf
       - /mnt/sdb2/wow_config/conf/playerbots.conf:/azerothcore/env/dist/etc/modules/playerbots.conf
       - /mnt/sdb2/wow_config/conf/mod_ahbot.conf:/azerothcore/env/dist/etc/modules/mod_ahbot.conf
+      - /mnt/sdb2/wow_config/conf/npc_enchanter.conf:/azerothcore/env/dist/etc/modules/npc_enchanter.conf
 
   phpmyadmin:
     image: phpmyadmin

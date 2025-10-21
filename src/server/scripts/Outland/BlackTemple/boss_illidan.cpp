@@ -207,7 +207,7 @@ struct boss_illidan_stormrage : public BossAI
         _canTalk = true;
         _dying = false;
         _inCutscene = false;
-        beamPosId = urand(0, MAX_EYE_BEAM_POS);
+        beamPosId = urand(0, MAX_EYE_BEAM_POS - 1);
         me->ReplaceAllUnitFlags(UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
         me->SetDisableGravity(false);
         me->SetHover(false);
@@ -507,7 +507,7 @@ struct boss_illidan_stormrage : public BossAI
                     Talk(SAY_ILLIDAN_EYE_BLAST);
                     me->SummonCreature(NPC_ILLIDAN_DB_TARGET, eyeBeamPos[beamPosId], TEMPSUMMON_TIMED_DESPAWN, 30000);
                     if (Creature* trigger = summons.GetCreatureWithEntry(NPC_ILLIDAN_DB_TARGET))
-                        trigger->GetMotionMaster()->MovePoint(0, eyeBeamPos[beamPosId + MAX_EYE_BEAM_POS], false, true);
+                        trigger->GetMotionMaster()->MovePoint(0, eyeBeamPos[beamPosId + MAX_EYE_BEAM_POS], FORCED_MOVEMENT_NONE, 0.f, false, true);
 
                     // Reposition
                     me->m_Events.AddEventAtOffset([&] {
@@ -515,7 +515,7 @@ struct boss_illidan_stormrage : public BossAI
                         me->InterruptNonMeleeSpells(false);
                         me->SetControlled(false, UNIT_STATE_ROOT);
                         CycleBeamPos(beamPosId);
-                        me->GetMotionMaster()->MovePoint(POINT_ILLIDAN_HOVER, airHoverPos[beamPosId], false, true);
+                        me->GetMotionMaster()->MovePoint(POINT_ILLIDAN_HOVER, airHoverPos[beamPosId], FORCED_MOVEMENT_NONE, 0.f, false, true);
                     }, 20s, GROUP_PHASE_FLYING);
                 });
                 // Check for Phase Transition
@@ -696,11 +696,11 @@ private:
 
     void CycleBeamPos(uint8 &beamPosId)
     {
-        uint8 _incumbentBeamPos = urand(0, MAX_EYE_BEAM_POS);
-        if (_incumbentBeamPos == beamPosId)
-            CycleBeamPos(beamPosId);
-        else
-            beamPosId = _incumbentBeamPos;
+        uint8 newPos;
+        do {
+            newPos = urand(0, MAX_EYE_BEAM_POS - 1);
+        } while (newPos == beamPosId);
+        beamPosId = newPos;
     }
 };
 
@@ -923,7 +923,7 @@ struct npc_akama_illidan : public ScriptedAI
                 me->m_Events.AddEventAtOffset([&] {
                     Talk(SAY_AKAMA_COUNCIL_2);
                     me->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-                }, 8000ms); // 7800ms
+                }, 8s); // 7800ms
             }
             break;
             // Reached Door
@@ -1436,7 +1436,7 @@ class spell_illidan_parasitic_shadowfiend_trigger : public SpellScript
     {
         PreventHitDefaultEffect(effIndex);
         if (Creature* target = GetHitCreature())
-            target->DespawnOrUnsummon(1);
+            target->DespawnOrUnsummon(1ms);
     }
 
     void Register() override
@@ -1692,7 +1692,7 @@ class spell_illidan_cage_trap : public SpellScript
             if (GetCaster()->GetExactDist2d(target) < 4.0f)
             {
                 target->AI()->DoAction(ACTION_ILLIDAN_CAGED);
-                GetCaster()->ToCreature()->DespawnOrUnsummon(1);
+                GetCaster()->ToCreature()->DespawnOrUnsummon(1ms);
                 if (GameObject* gobject = GetCaster()->FindNearestGameObject(GO_CAGE_TRAP, 10.0f))
                     gobject->SetLootState(GO_JUST_DEACTIVATED);
             }

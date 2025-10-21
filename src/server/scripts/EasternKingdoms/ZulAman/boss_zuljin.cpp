@@ -205,7 +205,7 @@ struct boss_zuljin : public BossAI
                 if (me->HasAura(SPELL_LYNX_RUSH_HASTE))
                     return;
 
-                DoCastRandomTarget(SPELL_CLAW_RAGE_CHARGE, 1);
+                DoCastRandomTarget(SPELL_CLAW_RAGE_CHARGE, 0, 0.0f, true, false, true);
             }, 15s, 20s);
 
             ScheduleTimedEvent(14s, [&] {
@@ -285,10 +285,7 @@ struct boss_zuljin : public BossAI
         instance->SetBossState(DATA_ZULJIN, DONE);
         Talk(SAY_DEATH);
         summons.DespawnEntry(CREATURE_COLUMN_OF_FIRE);
-
-        me->m_Events.AddEventAtOffset( [this] {
-            summons.DespawnAll();
-        }, 3s);
+        summons.DespawnAll(3s);
     }
 
     void SpawnAdds()
@@ -381,12 +378,17 @@ struct npc_zuljin_vortex : public ScriptedAI
         me->SetSpeed(MOVE_RUN, 1.0f);
         me->SetUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
         DoZoneInCombat();
+        // Start attacking random target
+        ChangeToNewPlayer();
     }
 
-    void SpellHit(Unit* caster, SpellInfo const* spell) override
+    void ChangeToNewPlayer()
     {
-        if (spell->Id == SPELL_ZAP_INFORM)
-            DoCast(caster, SPELL_ZAP_DAMAGE, true);
+        DoResetThreatList();
+        if (WorldObject* summoner = GetSummoner())
+            if (Creature* zuljin = summoner->ToCreature())
+                if (Unit* target = zuljin->AI()->SelectTarget(SelectTargetMethod::Random, 0, 80.0f, true))
+                    me->AddThreat(target, 10000000.0f);
     }
 
     void UpdateAI(uint32 /*diff*/) override
@@ -395,7 +397,7 @@ struct npc_zuljin_vortex : public ScriptedAI
 
         //if the vortex reach the target, it change his target to another player
         if (me->IsWithinMeleeRange(me->GetVictim()))
-            AttackStart(SelectTarget(SelectTargetMethod::Random, 0));
+            ChangeToNewPlayer();
     }
 };
 
@@ -431,9 +433,33 @@ class spell_claw_rage_aura : public AuraScript
     }
 };
 
+// 42577 - Zap
+class spell_zuljin_zap : public SpellScript
+{
+    PrepareSpellScript(spell_zuljin_zap);
+
+    bool Validate(SpellInfo const* /*spell*/) override
+    {
+        return ValidateSpellInfo({ SPELL_ZAP_DAMAGE });
+    }
+
+    void HandleScript(SpellEffIndex effIndex)
+    {
+        PreventHitDefaultEffect(effIndex);
+        if (Unit* victim = GetHitUnit())
+            victim->CastSpell(GetCaster(), SPELL_ZAP_DAMAGE, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_zuljin_zap::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
 void AddSC_boss_zuljin()
 {
     RegisterZulAmanCreatureAI(boss_zuljin);
     RegisterZulAmanCreatureAI(npc_zuljin_vortex);
     RegisterSpellScript(spell_claw_rage_aura);
+    RegisterSpellScript(spell_zuljin_zap);
 }

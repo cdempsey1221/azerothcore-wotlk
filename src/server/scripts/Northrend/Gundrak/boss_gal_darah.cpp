@@ -133,7 +133,7 @@ public:
                 despawnTime = (summon->GetDistance(target) / 40.0f * 1000) + 500;
             }
 
-            summon->DespawnOrUnsummon(despawnTime);
+            summon->DespawnOrUnsummon(Milliseconds(despawnTime));
         }
 
         uint32 GetData(uint32  /*type*/) const override
@@ -149,7 +149,7 @@ public:
 
         void KilledUnit(Unit*) override
         {
-            if (events.GetNextEventTime(EVENT_KILL_TALK) == 0)
+            if (!events.HasTimeUntilEvent(EVENT_KILL_TALK))
             {
                 Talk(SAY_SLAY);
                 events.ScheduleEvent(EVENT_KILL_TALK, 6s);
@@ -207,7 +207,7 @@ public:
                         return;
                     }
                     events.ScheduleEvent(EVENT_IMPALING_CHARGE, 21s);
-                    if (Unit* target = SelectTarget(SelectTargetMethod::Random, 1, 100.0f, true))
+                    if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true, false))
                     {
                         me->CastSpell(target, SPELL_IMPALING_CHARGE, false);
                         impaledList.insert(target->GetGUID());

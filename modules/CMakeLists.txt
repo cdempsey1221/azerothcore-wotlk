@@ -288,6 +288,10 @@ add_library(modules STATIC
     ${SCRIPT_MODULE_PRIVATE_SCRIPTLOADER}
     ${PRIVATE_SOURCES_MODULES})
 
+if (MOD_ELUNA_FOUND)
+    target_link_libraries(modules PUBLIC lualib)
+endif()
+
 target_link_libraries(modules
   PRIVATE
     acore-core-interface
@@ -350,6 +354,7 @@ foreach(ModuleName ${MODULE_LIST__})
 
   foreach(configFileName ${MODULE_CONFIG_LIST})
     CopyModuleConfig("${MODULE_CONFIG_PATH}/${configFileName}")
+    string(REGEX REPLACE "\.dist$" "" configFileName ${configFileName})
     set(CONFIG_LIST ${CONFIG_LIST}${configFileName},)
     message(STATUS "  |  * ${configFileName}")
   endforeach()

@@ -738,8 +738,9 @@ enum SMART_ACTION
     SMART_ACTION_MOVEMENT_PAUSE                     = 235,    // timer
     SMART_ACTION_MOVEMENT_RESUME                    = 236,    // timerOverride
     SMART_ACTION_WORLD_SCRIPT                       = 237,    // eventId, param
+    SMART_ACTION_DISABLE_REWARD                     = 238,    // reputation 0/1, loot 0/1
 
-    SMART_ACTION_AC_END                             = 238,    // placeholder
+    SMART_ACTION_AC_END                             = 239,    // placeholder
 };
 
 enum class SmartActionSummonCreatureFlags
@@ -764,6 +765,7 @@ struct SmartAction
             uint32 textGroupID;
             uint32 duration;
             SAIBool useTalkTarget;
+            uint32 delay;
         } talk;
 
         struct
@@ -1039,7 +1041,7 @@ struct SmartAction
 
         struct
         {
-            SAIBool run;
+            uint32 forcedMovement;
             uint32 pathID;
             SAIBool repeat;
             uint32 quest;
@@ -1214,7 +1216,14 @@ struct SmartAction
             uint32 controlled;
             uint32 ContactDistance;
             uint32 combatReach;
+            SAIBool disableForceDestination;
         } moveToPos;
+
+        struct
+        {
+            uint32 pointId;
+            SAIBool disableForceDestination;
+        } moveToPosTarget;
 
         struct
         {
@@ -1283,8 +1292,11 @@ struct SmartAction
 
         struct
         {
-            std::array<uint32, SMART_ACTION_PARAM_COUNT> wps;
-        } closestWaypointFromList;
+            uint32 pathId1;
+            uint32 pathId2;
+            uint32 repeat;
+            uint32 forcedMovement;
+        } startClosestWaypoint;
 
         struct
         {
@@ -1501,6 +1513,12 @@ struct SmartAction
             uint32 param5;
             uint32 param6;
         } raw;
+
+        struct
+        {
+            SAIBool reputation;
+            SAIBool loot;
+        } reward;
     };
 };
 
@@ -1939,7 +1957,8 @@ enum SmartCastFlags
     SMARTCAST_AURA_NOT_PRESENT       = 0x020,                     // Only casts the spell if the target does not have an aura from the spell
     SMARTCAST_COMBAT_MOVE            = 0x040,                     // Prevents combat movement if cast successful. Allows movement on range, OOM, LOS
     SMARTCAST_THREATLIST_NOT_SINGLE  = 0x080,                     // Only cast if the source's threatlist is higher than one. This includes pets (see Skeram's True Fulfillment)
-    SMARTCAST_TARGET_POWER_MANA      = 0x100                      // Only cast if the target has power type mana (e.g. Mana Drain)
+    SMARTCAST_TARGET_POWER_MANA      = 0x100,                     // Only cast if the target has power type mana (e.g. Mana Drain)
+    SMARTCAST_ENABLE_COMBAT_MOVE_ON_LOS = 0x200,
 };
 
 enum SmartFollowType
@@ -1973,6 +1992,8 @@ public:
     uint32 GetEventType() const { return (uint32)event.type; }
     uint32 GetActionType() const { return (uint32)action.type; }
     uint32 GetTargetType() const { return (uint32)target.type; }
+
+    [[nodiscard]] bool IsAreatriggerScript() const { return source_type == SMART_SCRIPT_TYPE_AREATRIGGER; }
 
     uint32 timer;
     uint32 priority;
@@ -2219,6 +2240,7 @@ private:
         return true;
     }
 
+    static bool IsSAIBoolValid(SmartScriptHolder const& e, SAIBool value);
     static bool IsTextValid(SmartScriptHolder const& e, uint32 id);
     static bool CheckUnusedEventParams(SmartScriptHolder const& e);
     static bool CheckUnusedActionParams(SmartScriptHolder const& e);

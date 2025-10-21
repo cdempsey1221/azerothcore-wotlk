@@ -15,13 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Ashenvale
-SD%Complete: 70
-SDComment: Quest support: 6544, 6482
-SDCategory: Ashenvale Forest
-EndScriptData */
-
 #include "CreatureScript.h"
 #include "Player.h"
 #include "ScriptedCreature.h"
@@ -128,7 +121,7 @@ public:
             {
                 Talk(SAY_MUG_START1);
                 me->SetFaction(FACTION_ESCORTEE_N_NEUTRAL_PASSIVE);
-                npc_escortAI::Start(true, false, player->GetGUID());
+                npc_escortAI::Start(true, player->GetGUID());
             }
         }
 

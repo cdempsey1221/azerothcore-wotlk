@@ -16,6 +16,7 @@
  */
 
 #include "AchievementCriteriaScript.h"
+#include "AreaDefines.h"
 #include "CreatureScript.h"
 #include "PassiveAI.h"
 #include "Player.h"
@@ -703,18 +704,18 @@ public:
                     if (Unit* s = me->ToTempSummon()->GetSummonerUnit())
                     {
                         if ((s->IsPlayer() && !s->HasAura(SPELL_FLASH_FREEZE_TRAPPED_PLAYER)) || (s->IsCreature() && !s->HasAura(SPELL_FLASH_FREEZE_TRAPPED_NPC)))
-                            me->DespawnOrUnsummon(2000);
+                            me->DespawnOrUnsummon(2s);
                         else if (s->IsPlayer())
                             if (InstanceScript* instanceScript = me->GetInstanceScript())
                                 if (instanceScript->GetData(TYPE_HODIR) == NOT_STARTED)
                                 {
                                     s->CastSpell(s, SPELL_FLASH_FREEZE_INSTAKILL, true);
-                                    me->DespawnOrUnsummon(2000);
+                                    me->DespawnOrUnsummon(2s);
                                 }
                     }
                     else
                     {
-                        me->DespawnOrUnsummon(2000);
+                        me->DespawnOrUnsummon(2s);
                     }
                 }
             }
@@ -1244,7 +1245,7 @@ class spell_hodir_biting_cold_player_aura : public AuraScript
     {
         if (Unit* target = GetTarget())
         {
-            if (target->GetMapId() == 603)
+            if (target->GetMapId() == MAP_ULDUAR)
                 SetDuration(GetMaxDuration());
             if (target->HasAura(SPELL_FLASH_FREEZE_TRAPPED_PLAYER))
                 return;

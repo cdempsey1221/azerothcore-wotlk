@@ -1473,7 +1473,7 @@ void Guild::HandleInviteMember(WorldSession* session, std::string const& name)
     if (pInvitee->GetSocial()->HasIgnore(player->GetGUID()))
         return;
 
-    uint32 memberLimit = sConfigMgr->GetOption<uint32>("Guild.MemberLimit", 0);
+    uint32 memberLimit = sWorld->getIntConfig(CONFIG_GUILD_MEMBER_LIMIT);
     if (memberLimit > 0 && player->GetGuild()->GetMemberCount() >= memberLimit)
     {
         ChatHandler(player->GetSession()).PSendSysMessage("Your guild has reached the maximum amount of members ({}). You cannot send another invite until the guild member count is lower.", memberLimit);
@@ -1585,11 +1585,14 @@ void Guild::HandleRemoveMember(WorldSession* session, std::string_view name)
                 SendCommandResult(session, GUILD_COMMAND_REMOVE, ERR_GUILD_RANK_TOO_HIGH_S, name);
             else
             {
+                // Copy values since everything will be deleted in DeleteMember().
                 ObjectGuid guid = member->GetGUID();
+                std::string memberName = member->GetName();
+
                 // After call to DeleteMember pointer to member becomes invalid
                 DeleteMember(guid, false, true);
                 _LogEvent(GUILD_EVENT_LOG_UNINVITE_PLAYER, player->GetGUID(), guid);
-                _BroadcastEvent(GE_REMOVED, ObjectGuid::Empty, member->GetName(), player->GetName());
+                _BroadcastEvent(GE_REMOVED, ObjectGuid::Empty, memberName, player->GetName());
             }
         }
     }
@@ -2204,10 +2207,18 @@ void Guild::MassInviteToEvent(WorldSession* session, uint32 minLevel, uint32 max
 bool Guild::AddMember(ObjectGuid guid, uint8 rankId)
 {
     Player* player = ObjectAccessor::FindConnectedPlayer(guid);
+
+    Player* leader = nullptr;
+    if (this->GetLeaderGUID())
+    {
+        leader = ObjectAccessor::FindConnectedPlayer(this->GetLeaderGUID());
+    }
+
     // Player cannot be in guild
     if (player)
     {
-        if (player->GetGuildId() != 0)
+        if (player->GetGuildId() != 0 ||
+            (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && (leader && leader->GetTeamId() != player->GetTeamId())))
             return false;
     }
     else if (sCharacterCache->GetCharacterGuildIdByGuid(guid) != 0)

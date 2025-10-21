@@ -80,12 +80,9 @@ public:
     struct boss_sapphironAI : public BossAI
     {
         explicit boss_sapphironAI(Creature* c) : BossAI(c, BOSS_SAPPHIRON)
-        {
-            pInstance = me->GetInstanceScript();
-        }
+        {}
 
         EventMap events;
-        InstanceScript* pInstance;
         uint8 iceboltCount{};
         uint32 spawnTimer{};
         GuidList blockList;
@@ -209,10 +206,8 @@ public:
 
         void KilledUnit(Unit* who) override
         {
-            if (who->IsPlayer() && pInstance)
-            {
-                pInstance->SetData(DATA_IMMORTAL_FAIL, 0);
-            }
+            if (who->IsPlayer())
+                instance->StorePersistentData(PERSISTENT_DATA_IMMORTAL_FAIL, 1);
         }
 
         void UpdateAI(uint32 diff) override
@@ -273,7 +268,7 @@ public:
                         {
                             cr->GetMotionMaster()->MoveRandom(40);
                         }
-                        events.RepeatEvent(RAID_MODE(8000, 6500));
+                        events.Repeat(RAID_MODE(8000ms, 6500ms));
                         return;
                     }
                 case EVENT_FLIGHT_START:
@@ -342,7 +337,7 @@ public:
                             blockList.push_back((*itr)->GetGUID());
                             currentTarget = (*itr)->GetGUID();
                             --iceboltCount;
-                            events.ScheduleEvent(EVENT_FLIGHT_ICEBOLT, (me->GetExactDist(*itr) / 13.0f)*IN_MILLISECONDS);
+                            events.ScheduleEvent(EVENT_FLIGHT_ICEBOLT, Seconds(uint32(me->GetExactDist(*itr) / 13.0f)));
                         }
                         else
                         {
@@ -390,9 +385,9 @@ public:
                         Map::PlayerList const& pList = me->GetMap()->GetPlayers();
                         for (auto const& itr : pList)
                         {
-                            if (itr.GetSource()->GetResistance(SPELL_SCHOOL_FROST) > 100 && pInstance)
+                            if (itr.GetSource()->GetResistance(SPELL_SCHOOL_FROST) > 100)
                             {
-                                pInstance->SetData(DATA_HUNDRED_CLUB, 0);
+                                instance->SetData(DATA_HUNDRED_CLUB, 0);
                                 return;
                             }
                         }

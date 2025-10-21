@@ -15,17 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Westfall
-SD%Complete: 90
-SDComment: Quest support: 155
-SDCategory: Westfall
-EndScriptData */
-
-/* ContentData
-npc_daphne_stilwell
-EndContentData */
-
 #include "CreatureScript.h"
 #include "Player.h"
 #include "ScriptedCreature.h"
@@ -67,9 +56,9 @@ public:
         if (quest->GetQuestId() == QUEST_TOME_VALOR)
         {
             creature->AI()->Talk(SAY_DS_START);
-
+            creature->SetWalk(false);
             if (npc_escortAI* pEscortAI = CAST_AI(npc_daphne_stilwell::npc_daphne_stilwellAI, creature->AI()))
-                pEscortAI->Start(true, true, player->GetGUID());
+                pEscortAI->Start(true, player->GetGUID());
         }
 
         return true;

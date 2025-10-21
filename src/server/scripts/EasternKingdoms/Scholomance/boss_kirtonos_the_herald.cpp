@@ -103,7 +103,7 @@ public:
         void EnterEvadeMode(EvadeReason /*why*/) override
         {
             instance->SetData(DATA_KIRTONOS_THE_HERALD, FAIL);
-            me->DespawnOrUnsummon(1);
+            me->DespawnOrUnsummon(1ms);
         }
 
         void MovementInform(uint32 type, uint32 id) override
@@ -208,7 +208,7 @@ public:
                     events.ScheduleEvent(EVENT_CURSE_OF_TONGUES, 20s);
                     break;
                 case EVENT_DOMINATE_MIND:
-                    if (Unit* target = SelectTarget(SelectTargetMethod::Random, 1, 20.0f, true))
+                    if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 20.0f, true, false))
                     {
                         me->CastSpell(target, SPELL_DOMINATE_MIND, false);
                     }

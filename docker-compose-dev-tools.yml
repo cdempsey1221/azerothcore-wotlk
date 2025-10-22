@@ -7,7 +7,7 @@ services:
       - AC_UPDATES_ENABLE_DATABASES=1
     volumes:
       # Mount modules from host
-      # - /mnt/sdb2/wow_config/modules:/azerothcore/modules:rw
+      - /mnt/sdb2/wow_config/modules:/azerothcore/modules:rw
       - /mnt/sdb2/wow_config/conf/worldserver.conf:/azerothcore/env/dist/etc/worldserver.conf
       - /mnt/sdb2/wow_config/conf/playerbots.conf:/azerothcore/env/dist/etc/modules/playerbots.conf
       - /mnt/sdb2/wow_config/conf/mod_ahbot.conf:/azerothcore/env/dist/etc/modules/mod_ahbot.conf
